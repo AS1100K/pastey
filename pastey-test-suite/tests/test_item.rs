@@ -318,9 +318,9 @@ mod test_raw_mode {
     macro_rules! m{
         ($name:ident $(- $name_tail:ident)*) => {
             paste!{
-                struct [< # $name:camel $( $name_tail)* >];
+                struct [< $name:camel $( $name_tail)* >];
 
-                impl [< # $name:camel $( $name_tail)* >] {
+                impl [< $name:camel $( $name_tail)* >] {
                     fn [< # $name:snake $( _ $name_tail:snake)* >]() {}
                 }
 
@@ -328,13 +328,17 @@ mod test_raw_mode {
         }
     }
 
-    m!(r#loop);
-    m!(r#loop - xyz);
+    m!(loop);
+    m!(loop - xyz);
+    m!(dyn);
+    m!(unsafe);
 
     #[test]
     fn test_fn() {
         let _ = Loop::r#loop();
         let _ = Loopxyz::loop_xyz();
+        let _ = Dyn::r#dyn();
+        let _ = Unsafe::r#unsafe();
     }
 }
 
@@ -357,7 +361,7 @@ mod test_join {
         };
     }
 
-    m!(r#loop, welcome);
+    m!(loop, welcome);
 
     #[test]
     fn test_fn() {

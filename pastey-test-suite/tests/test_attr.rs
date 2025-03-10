@@ -72,7 +72,7 @@ fn test_paste_raw_mode() {
         };
     }
 
-    m!(r#loop);
+    m!(loop);
 
     let _ = Loop;
 }
