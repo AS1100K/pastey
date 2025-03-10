@@ -154,14 +154,13 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
                         // Enable Raw mode
                         evaluated.push(String::from("r#"));
                         continue;
-                    } else {
-                        return Err(Error::new(
-                            segment.span,
-                            "`#` is reserved keyword and it enables the raw mode \
+                    }
+                    return Err(Error::new(
+                        segment.span,
+                        "`#` is reserved keyword and it enables the raw mode \
                             (i.e. generate Raw Identifiers) and it is only allowed in \
                             the beginning like `[< # ... >]`",
-                        ));
-                    }
+                    ));
                 }
                 evaluated.push(segment.value.clone());
             }
