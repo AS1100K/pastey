@@ -311,3 +311,56 @@ mod test_pat_in_expr_position {
 
     rav1e_bad!(std::fmt::Error);
 }
+
+mod test_raw_mode {
+    use pastey::paste;
+
+    macro_rules! m{
+        ($name:ident $(- $name_tail:ident)*) => {
+            paste!{
+                struct [< # $name:camel $( $name_tail)* >];
+
+                impl [< # $name:camel $( $name_tail)* >] {
+                    fn [< # $name:snake $( _ $name_tail:snake)* >]() {}
+                }
+
+            }
+        }
+    }
+
+    m!(r#loop);
+    m!(r#loop - xyz);
+
+    #[test]
+    fn test_fn() {
+        let _ = Loop::r#loop();
+        let _ = Loopxyz::loop_xyz();
+    }
+}
+
+mod test_join {
+    use pastey::paste;
+
+    macro_rules! m {
+        ($name:ident, $func:ident) => {
+            paste! {
+                struct [< # $name:camel >];
+
+                impl [< # $name:camel >] {
+                    fn [< $func:snake >](&self) {}
+
+                    fn test()  {
+                        [< # $name:camel >].[< $func:snake >]()
+                    }
+                }
+            }
+        };
+    }
+
+    m!(r#loop, welcome);
+
+    #[test]
+    fn test_fn() {
+        Loop::test();
+    }
+}

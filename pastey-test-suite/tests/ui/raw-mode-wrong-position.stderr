@@ -1,0 +1,10 @@
+error: `#` is reserved keyword and it enables the raw mode (i.e. generate Raw Identifiers) and it is only allowed in the beginning like `[< # ... >]`
+  --> tests/ui/raw-mode-wrong-position.rs:6:35
+   |
+6  |             struct [< $name:camel # >];
+   |                                   ^
+...
+11 | m!(r#loop);
+   | ---------- in this macro invocation
+   |
+   = note: this error originates in the macro `m` (in Nightly builds, run with -Z macro-backtrace for more info)

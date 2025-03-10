@@ -60,3 +60,19 @@ fn test_path_in_attr() {
 
     assert_eq!("foo::Bar", ty);
 }
+
+#[test]
+fn test_paste_raw_mode() {
+    macro_rules! m {
+        ($name:ident) => {
+            paste! {
+                #[paste_test(k = "value" [< # $name >])]
+                struct [<# $name:camel>];
+            }
+        };
+    }
+
+    m!(r#loop);
+
+    let _ = Loop;
+}

@@ -12,4 +12,8 @@ paste! {
     fn [<f "'">]() {}
 }
 
+paste! {
+    fn [< loop >]() {}
+}
+
 fn main() {}

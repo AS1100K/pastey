@@ -24,3 +24,14 @@ error: `"f'"` is not a valid identifier
    |
 12 |     fn [<f "'">]() {}
    |        ^^^^^^^^^
+
+error: expected identifier, found keyword `loop`
+  --> tests/ui/invalid-ident.rs:16:8
+   |
+16 |     fn [< loop >]() {}
+   |        ^^^^^^^^^^ expected identifier, found keyword
+   |
+help: escape `loop` to use it as an identifier
+   |
+16 |     fn r#[< loop >]() {}
+   |        ++

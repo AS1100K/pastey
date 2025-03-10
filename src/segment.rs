@@ -119,6 +119,10 @@ pub(crate) fn parse(tokens: &mut Peekable<token_stream::IntoIter>) -> Result<Vec
                     };
                     segments.push(Segment::Modifier(colon, ident));
                 }
+                '#' => segments.push(Segment::String(LitStr {
+                    value: "#".to_string(),
+                    span: punct.span(),
+                })),
                 _ => return Err(Error::new(punct.span(), "unexpected punct")),
             },
             TokenTree::Group(group) => {
@@ -142,9 +146,23 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
     let mut evaluated = Vec::new();
     let mut is_lifetime = false;
 
-    for segment in segments {
+    for (i, segment) in segments.iter().enumerate() {
         match segment {
             Segment::String(segment) => {
+                if segment.value.as_str() == "#" {
+                    if i == 0 {
+                        // Enable Raw mode
+                        evaluated.push(String::from("r#"));
+                        continue;
+                    } else {
+                        return Err(Error::new(
+                            segment.span,
+                            "`#` is reserved keyword and it enables the raw mode \
+                            (i.e. generate Raw Identifiers) and it is only allowed in \
+                            the beginning like `[< # ... >]`",
+                        ));
+                    }
+                }
                 evaluated.push(segment.value.clone());
             }
             Segment::Apostrophe(span) => {
