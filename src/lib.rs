@@ -248,7 +248,7 @@ fn parse_bracket_as_segments(input: TokenStream, scope: Span) -> Result<Vec<Segm
                     }
                 }
             }
-            if string.value.contains(&['#', '\\', '.', '+'][..])
+            if string.value.contains(&['\\', '.', '+'][..])
                 || string.value.starts_with("b'")
                 || string.value.starts_with("b\"")
                 || string.value.starts_with("br\"")
@@ -271,6 +271,7 @@ fn parse_bracket_as_segments(input: TokenStream, scope: Span) -> Result<Vec<Segm
 }
 
 fn pasted_to_tokens(mut pasted: String, span: Span) -> Result<TokenStream> {
+    let mut raw_mode = false;
     let mut tokens = TokenStream::new();
 
     #[cfg(not(no_literal_fromstr))]
@@ -300,7 +301,20 @@ fn pasted_to_tokens(mut pasted: String, span: Span) -> Result<TokenStream> {
         pasted.remove(0);
     }
 
-    let ident = match panic::catch_unwind(|| Ident::new(&pasted, span)) {
+    if pasted.starts_with("r#") {
+        raw_mode = true;
+    }
+
+    let ident = match panic::catch_unwind(|| {
+        if raw_mode {
+            let mut spasted = pasted.clone();
+            spasted.remove(0);
+            spasted.remove(0);
+            Ident::new_raw(&spasted, span)
+        } else {
+            Ident::new(&pasted, span)
+        }
+    }) {
         Ok(ident) => TokenTree::Ident(ident),
         Err(_) => {
             return Err(Error::new(

@@ -127,6 +127,13 @@ fn do_paste_name_value_attr(attr: TokenStream, span: Span, leading: usize) -> Re
     }
 
     let mut lit = segment::paste(&segments)?;
+
+    if lit.starts_with("r#") {
+        // Raw mode doesn't have any impact when using in attribute
+        lit.remove(0);
+        lit.remove(0);
+    }
+
     lit.insert(0, '"');
     lit.push('"');
 
