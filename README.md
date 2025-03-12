@@ -189,7 +189,6 @@ macro_rules! define_struct_and_impl {
 define_struct_and_impl!(loop);
 define_struct_and_impl!(loop - xyz);
 
-#[test]
 fn test_fn() {
     let _ = Loop::r#loop();
     let _ = Loopxyz::loop_xyz();
