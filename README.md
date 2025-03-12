@@ -6,10 +6,11 @@ Macros for all your token pasting needs
 [<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-pastey-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20">](https://docs.rs/pastey)
 [<img alt="build status" src="https://img.shields.io/github/actions/workflow/status/as1100k/pastey/ci.yml?branch=master&style=for-the-badge" height="20">](https://github.com/as1100k/pastey/actions?query=branch%master)
 
-**_This crate is the successor of [paste crate](https://github.com/dtolnay/paste)_**
+**_`pastey` is the fork of `paste` and is aimed to be a drop-in replacement with additional features for
+`paste` crate_**
 
 <details>
-<summary>Migrating from `paste` crate</summary>
+<summary>Migrating from <code>paste</code> crate</summary>
 
 Migrating from `paste` crate to `pastey` is super simple, just change the following in your `Cargo.toml`
 
@@ -164,6 +165,39 @@ The precise Unicode conversions are as defined by [`str::to_lowercase`] and
 
 <br>
 
+## Raw Identifier Generation
+
+`pastey` now supports raw identifiers using a special raw mode. By prefixing a token with `#`
+inside the paste syntax, it treats that token as a raw identifier.
+
+```rust
+use pastey::paste;
+
+macro_rules! define_struct_and_impl {
+    ($name:ident $(- $name_tail:ident)*) => {
+        paste!{
+            struct [< # $name:camel $( $name_tail)* >]; // '#' signals a raw identifier
+
+            impl [< # $name:camel $( $name_tail)* >] {
+                fn [< # $name:snake $( _ $name_tail:snake)* >]() {}
+            }
+
+        }
+    }
+}
+
+define_struct_and_impl!(loop);
+define_struct_and_impl!(loop - xyz);
+
+#[test]
+fn test_fn() {
+    let _ = Loop::r#loop();
+    let _ = Loopxyz::loop_xyz();
+}
+```
+
+<br>
+
 ## Pasting documentation strings
 
 Within the `paste!` macro, arguments to a #\[doc ...\] attribute are implicitly
@@ -191,7 +225,7 @@ method_new!(Pastey);  // expands to #[doc = "Create a new `Paste` object"]
 #### Credits
 
 <sup>
-This crate is the fork of [paste](https://github.com/dtolnay/paste) and I appreciate the efforts of
+This crate is the fork of <a href="https://github.com/dtolnay/paste"><code>paste</code></a> and I appreciate the efforts of
 @dtolnay and other contributors.
 </sup>
 
