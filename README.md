@@ -9,6 +9,8 @@ Macros for all your token pasting needs
 **_`pastey` is the fork of `paste` and is aimed to be a drop-in replacement with additional features for
 `paste` crate_**
 
+<br/>
+
 <details>
 <summary>Migrating from <code>paste</code> crate</summary>
 
@@ -31,9 +33,6 @@ Or even better way:
 </details>
 
 <br>
-
-This crate aims to be a drop-in replacement for `paste` and doesn't change any existing behaviour while
-adding features and fixing bugs. [See Case Conversion for more info](#case-conversion)
 
 ## Quick Start
 
