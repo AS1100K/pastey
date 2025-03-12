@@ -1,3 +1,4 @@
+"package.version" = "0.1.0"
 [package]
 name = "pastey"
 version = "0.0.1"
