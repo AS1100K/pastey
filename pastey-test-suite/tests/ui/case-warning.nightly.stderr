@@ -1,4 +1,4 @@
- error: function `fooBar` should have a snake case name
+error: function `fooBar` should have a snake case name
   --> tests/ui/case-warning.rs:8:20
    |
  8 |             pub fn [<foo $i>]() {}
