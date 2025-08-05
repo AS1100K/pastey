@@ -15,7 +15,7 @@ env:
 jobs:
   pre_ci:
     uses: dtolnay/.github/.github/workflows/pre_ci.yml@master
-    
+
   test:
     name: Rust ${{matrix.rust}}
     needs: pre_ci
@@ -34,7 +34,7 @@ jobs:
       - name: Enable type layout randomization
         run: echo RUSTFLAGS=${RUSTFLAGS}\ -Zrandomize-layout >> $GITHUB_ENV
         if: matrix.rust == 'nightly'
-      - run: ./test.sh
+      - run: ./test.sh ${{matrix.rust}}
       - uses: actions/upload-artifact@v4
         if: matrix.rust == 'nightly' && always()
         with:

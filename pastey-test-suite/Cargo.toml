@@ -15,4 +15,4 @@ proc-macro = true
 [dependencies]
 pastey = { path = "../" }
 rustversion = "1.0"
-trybuild = "1"
+trybuild = { version = "1", features = ["diff"] }
