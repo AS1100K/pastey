@@ -16,3 +16,6 @@ proc-macro = true
 pastey = { path = "../" }
 rustversion = "1.0"
 trybuild = { version = "1", features = ["diff"] }
+
+# CI Fix for Rust 1.56 as the latest version of glob (used in trybuild) doesn't support Rust 1.56
+glob = "<0.3.3"
