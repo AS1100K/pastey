@@ -23,6 +23,13 @@ echo "========================================"
 echo "Running tests with pastey-test-suite crate..."
 echo "========================================"
 cd pastey-test-suite
+
+# Set some packages to their precise version to avoid MSRV conflict
+if [[ "$1" == "1.56.0" ]]; then
+    cargo update -p quote --precise 1.0.40
+    cargo update -p glob --precise 0.3.2
+fi
+
 cargo test
 rm ./tests/ui/case-warning.stderr
 rm ./tests/ui/raw-mode-wrong-position.stderr
