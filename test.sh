@@ -28,6 +28,7 @@ cd pastey-test-suite
 if [[ "$1" == "1.56.0" ]]; then
     cargo update -p quote --precise 1.0.40
     cargo update -p glob --precise 0.3.2
+    cargo update -p serde_derive --precise 1.0.210
 fi
 
 cargo test
