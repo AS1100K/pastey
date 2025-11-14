@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use proc_macro::{token_stream, Delimiter, Ident, Span, TokenTree};
+use proc_macro::{token_stream, Delimiter, Group, Ident, Literal, Span, TokenTree};
 use std::iter::Peekable;
 
 pub(crate) enum Segment {
@@ -7,6 +7,7 @@ pub(crate) enum Segment {
     Apostrophe(Span),
     Env(LitStr),
     Modifier(Colon, Ident),
+    Replace(Group),
 }
 
 pub(crate) struct LitStr {
@@ -117,7 +118,28 @@ pub(crate) fn parse(tokens: &mut Peekable<token_stream::IntoIter>) -> Result<Vec
                             return Err(Error::new(span, "expected identifier after `:`"));
                         }
                     };
-                    segments.push(Segment::Modifier(colon, ident));
+
+                    if ident.to_string().as_str() == "replace" {
+                        let replace = tokens.next();
+
+                        match replace {
+                            Some(TokenTree::Group(group))
+                                if group.delimiter() == Delimiter::Parenthesis =>
+                            {
+                                segments.push(Segment::Replace(group));
+                            }
+                            _ => {
+                                // TODO: Better error message
+                                return Err(Error::new2(
+                                    colon.span,
+                                    ident.span(),
+                                    "Incorrect replace modifier format.",
+                                ));
+                            }
+                        }
+                    } else {
+                        segments.push(Segment::Modifier(colon, ident));
+                    }
                 }
                 '#' => segments.push(Segment::String(LitStr {
                     value: "#".to_string(),
@@ -270,6 +292,37 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
                     }
                 }
             }
+            Segment::Replace(group) => {
+                let mut inner_stream = group.stream().into_iter();
+                let from = inner_stream.next();
+                let punct = inner_stream.next();
+                let to = inner_stream.next();
+
+                match (from, punct, to) {
+                    (
+                        Some(TokenTree::Literal(from)),
+                        Some(TokenTree::Punct(punct)),
+                        Some(TokenTree::Literal(to)),
+                    ) if punct.as_char() == ',' => {
+                        let last = match evaluated.pop() {
+                            Some(last) => last,
+                            // TODO: Better error message, maybe use colon span too
+                            None => return Err(Error::new(group.span(), "Incorrect Format")),
+                        };
+
+                        let from_str = get_literal_value(&from);
+                        let to_str = get_literal_value(&to);
+
+                        let new_ident = last.replace(&from_str, &to_str);
+
+                        evaluated.push(new_ident);
+                    }
+                    _ => {
+                        // TODO: Better error message
+                        todo!()
+                    }
+                }
+            }
         }
     }
 
@@ -278,4 +331,14 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
         pasted.insert(0, '\'');
     }
     Ok(pasted)
+}
+
+fn get_literal_value(l: &Literal) -> String {
+    let l_str = l.to_string();
+
+    if l_str.starts_with('"') && l_str.ends_with('"') && l_str.len() >= 2 {
+        String::from(&l_str[1..l_str.len() - 1])
+    } else {
+        l_str
+    }
 }

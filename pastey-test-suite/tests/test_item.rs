@@ -368,3 +368,34 @@ mod test_join {
         Loop::test();
     }
 }
+
+mod test_replace {
+    use pastey::paste;
+
+    macro_rules! m {
+        ($($command:ident),+) => {
+            paste! {
+                $(
+                    pub struct $command {}
+                )*
+
+                pub enum Command {
+                    $(
+                        [< $command:replace("Command", "") >] ( $command )
+                    ),*
+                }
+            }
+        };
+    }
+
+    m! {
+        CommandFoo,
+        CommandBar
+    }
+
+    #[test]
+    fn test_replace() {
+        let _ = Command::Bar(CommandBar {});
+        let _ = Command::Foo(CommandFoo {});
+    }
+}
