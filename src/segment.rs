@@ -69,20 +69,12 @@ pub(crate) fn parse(tokens: &mut Peekable<token_stream::IntoIter>) -> Result<Vec
                             ))
                         }
                     };
-                    let lit_string = lit.to_string();
-                    if lit_string.starts_with('"')
-                        && lit_string.ends_with('"')
-                        && lit_string.len() >= 2
-                    {
-                        // TODO: maybe handle escape sequences in the string if
-                        // someone has a use case.
-                        segments.push(Segment::Env(LitStr {
-                            value: lit_string[1..lit_string.len() - 1].to_owned(),
-                            span: lit.span(),
-                        }));
-                    } else {
-                        return Err(Error::new(lit.span(), "expected string literal"));
-                    }
+
+                    segments.push(Segment::Env(LitStr {
+                        value: get_literal_string_value(&lit)?,
+                        span: lit.span(),
+                    }));
+
                     if let Some(unexpected) = inner.next() {
                         return Err(Error::new(
                             unexpected.span(),
@@ -129,11 +121,10 @@ pub(crate) fn parse(tokens: &mut Peekable<token_stream::IntoIter>) -> Result<Vec
                                 segments.push(Segment::Replace(group));
                             }
                             _ => {
-                                // TODO: Better error message
                                 return Err(Error::new2(
                                     colon.span,
                                     ident.span(),
-                                    "Incorrect replace modifier format.",
+                                    "expected `(` after replace modifer",
                                 ));
                             }
                         }
@@ -298,28 +289,40 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
                 let punct = inner_stream.next();
                 let to = inner_stream.next();
 
+                if let Some(unexpected_token) = inner_stream.next() {
+                    return Err(Error::new(
+                        unexpected_token.span(),
+                        "unexpected token in replace modifier",
+                    ));
+                }
+
                 match (from, punct, to) {
                     (
                         Some(TokenTree::Literal(from)),
                         Some(TokenTree::Punct(punct)),
                         Some(TokenTree::Literal(to)),
                     ) if punct.as_char() == ',' => {
-                        let last = match evaluated.pop() {
-                            Some(last) => last,
-                            // TODO: Better error message, maybe use colon span too
-                            None => return Err(Error::new(group.span(), "Incorrect Format")),
-                        };
+                        let last =
+                            match evaluated.pop() {
+                                Some(last) => last,
+                                None => return Err(Error::new(
+                                    group.span(),
+                                    "replace modifier requires a preceding value to operate on.",
+                                )),
+                            };
 
-                        let from_str = get_literal_value(&from);
-                        let to_str = get_literal_value(&to);
+                        let from_str = get_literal_string_value(&from)?;
+                        let to_str = get_literal_string_value(&to)?;
 
                         let new_ident = last.replace(&from_str, &to_str);
 
                         evaluated.push(new_ident);
                     }
                     _ => {
-                        // TODO: Better error message
-                        todo!()
+                        return Err(Error::new(
+                            group.span(),
+                            "expected replace modifer format: `:replace(\"from\", \"to\")`",
+                        ))
                     }
                 }
             }
@@ -333,12 +336,14 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
     Ok(pasted)
 }
 
-fn get_literal_value(l: &Literal) -> String {
+fn get_literal_string_value(l: &Literal) -> Result<String> {
     let l_str = l.to_string();
 
     if l_str.starts_with('"') && l_str.ends_with('"') && l_str.len() >= 2 {
-        String::from(&l_str[1..l_str.len() - 1])
+        // TODO: maybe handle escape sequences in the string if
+        // someone has a use case.
+        Ok(String::from(&l_str[1..l_str.len() - 1]))
     } else {
-        l_str
+        Err(Error::new(l.span(), "expected string literal"))
     }
 }
