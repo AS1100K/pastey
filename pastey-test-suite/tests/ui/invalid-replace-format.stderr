@@ -1,4 +1,4 @@
-error: expected replace modifer format: `:replace("from", "to")`
+error: expected replace modifier format: `:replace("from", "to")`
   --> tests/ui/invalid-replace-format.rs:6:36
    |
  6 |             struct [< $name:replace("P" "LibP") >];

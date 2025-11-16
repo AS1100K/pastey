@@ -124,7 +124,7 @@ pub(crate) fn parse(tokens: &mut Peekable<token_stream::IntoIter>) -> Result<Vec
                                 return Err(Error::new2(
                                     colon.span,
                                     ident.span(),
-                                    "expected `(` after replace modifer",
+                                    "expected `(` after replace modifier",
                                 ));
                             }
                         }
@@ -319,7 +319,7 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
                     _ => {
                         return Err(Error::new(
                             group.span(),
-                            "expected replace modifer format: `:replace(\"from\", \"to\")`",
+                            "expected replace modifier format: `:replace(\"from\", \"to\")`",
                         ))
                     }
                 }

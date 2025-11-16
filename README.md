@@ -164,7 +164,7 @@ The precise Unicode conversions are as defined by [`str::to_lowercase`] and
 
 <br>
 
-## Replace modifer
+## Replace modifier
 
 The `replace` modifier allows you to perform string replacement on identifiers,
 using the same semantics as [`str::replace`](https://doc.rust-lang.org/std/primitive.str.html#method.replace).

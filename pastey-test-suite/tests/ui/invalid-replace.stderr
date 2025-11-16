@@ -1,4 +1,4 @@
-error: expected `(` after replace modifer
+error: expected `(` after replace modifier
   --> tests/ui/invalid-replace.rs:6:28
    |
  6 |             struct [< $name:replace >]
