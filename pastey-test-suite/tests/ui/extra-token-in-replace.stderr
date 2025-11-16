@@ -1,0 +1,10 @@
+error: expected `)`
+  --> tests/ui/extra-token-in-replace.rs:6:45
+   |
+ 6 |             struct [< $name:replace("a", "b", "c") >];
+   |                                             ^
+...
+11 | m!(Pastey);
+   | ---------- in this macro invocation
+   |
+   = note: this error originates in the macro `m` (in Nightly builds, run with -Z macro-backtrace for more info)
