@@ -129,7 +129,7 @@ The `pastey` crate supports the following case modfiers:
 |------------------------------------|---------------------------------------|
 | `$var:lower`                       | Lower Case                            |
 | `$var:upper`                       | Upper Case                            |
-| `$var:snake`                       | [Snake Case]                          |
+| `$var:snake`                       | Snake Case                            |
 | `$var:camel` or `$var:upper_camel` | Upper Camel Case                      |
 | `$var:lower_camel`                 | Lower Camel Case [#4]                 |
 | `$var:camel_edge`                  | Covers Edge cases of Camel Case. [#3] |
@@ -163,6 +163,38 @@ The precise Unicode conversions are as defined by [`str::to_lowercase`] and
 [`str::to_uppercase`]: https://doc.rust-lang.org/std/primitive.str.html#method.to_uppercase
 
 <br>
+
+## Replace modifer
+
+The `replace` modifier allows you to perform string replacement on identifiers,
+using the same semantics as [`str::replace`](https://doc.rust-lang.org/std/primitive.str.html#method.replace).
+This is useful for transforming identifiers by removing or substituting substrings.
+
+```rust
+use pastey::paste;
+
+macro_rules! m {
+    ($($command:ident),+) => {
+        paste! {
+            $(pub struct $command {})*
+            
+            pub enum Command {
+                $(
+                    [< $command:replace("Command", "") >] ( $command )
+                ),*
+            }
+        }
+    }
+}
+
+m! {
+    CommandFoo,
+    CommandBar
+}
+
+let command_bar = Command::Bar(CommandBar {});
+let command_foo = Command::Foo(CommandFoo {});
+```
 
 ## Raw Identifier Generation
 
