@@ -7,7 +7,7 @@ pub(crate) enum Segment {
     Apostrophe(Span),
     Env(LitStr),
     Modifier(Colon, Ident),
-    Replace(Group),
+    Replace(Colon, Group),
 }
 
 pub(crate) struct LitStr {
@@ -118,7 +118,7 @@ pub(crate) fn parse(tokens: &mut Peekable<token_stream::IntoIter>) -> Result<Vec
                             Some(TokenTree::Group(group))
                                 if group.delimiter() == Delimiter::Parenthesis =>
                             {
-                                segments.push(Segment::Replace(group));
+                                segments.push(Segment::Replace(colon, group));
                             }
                             _ => {
                                 return Err(Error::new2(
@@ -283,17 +283,14 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
                     }
                 }
             }
-            Segment::Replace(group) => {
+            Segment::Replace(colon, group) => {
                 let mut inner_stream = group.stream().into_iter();
                 let from = inner_stream.next();
                 let punct = inner_stream.next();
                 let to = inner_stream.next();
 
                 if let Some(unexpected_token) = inner_stream.next() {
-                    return Err(Error::new(
-                        unexpected_token.span(),
-                        "unexpected token in replace modifier",
-                    ));
+                    return Err(Error::new(unexpected_token.span(), "expected `)`"));
                 }
 
                 match (from, punct, to) {
@@ -305,7 +302,8 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
                         let last =
                             match evaluated.pop() {
                                 Some(last) => last,
-                                None => return Err(Error::new(
+                                None => return Err(Error::new2(
+                                    colon.span,
                                     group.span(),
                                     "replace modifier requires a preceding value to operate on.",
                                 )),

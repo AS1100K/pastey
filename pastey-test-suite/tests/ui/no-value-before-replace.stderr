@@ -1,0 +1,10 @@
+error: replace modifier requires a preceding value to operate on.
+  --> tests/ui/no-value-before-replace.rs:6:23
+   |
+ 6 |             struct [< :replace("H", "W") >];
+   |                       ^^^^^^^^^^^^^^^^^^
+...
+11 | m!();
+   | ---- in this macro invocation
+   |
+   = note: this error originates in the macro `m` (in Nightly builds, run with -Z macro-backtrace for more info)
