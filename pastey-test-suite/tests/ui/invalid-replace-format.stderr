@@ -1,0 +1,10 @@
+error: expected replace modifier format: `:replace("from", "to")`
+  --> tests/ui/invalid-replace-format.rs:6:36
+   |
+ 6 |             struct [< $name:replace("P" "LibP") >];
+   |                                    ^^^^^^^^^^^^
+...
+11 | m!(Pastey);
+   | ---------- in this macro invocation
+   |
+   = note: this error originates in the macro `m` (in Nightly builds, run with -Z macro-backtrace for more info)

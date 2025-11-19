@@ -1,6 +1,6 @@
 [package]
 name = "pastey"
-version = "0.1.1"
+version = "0.2.0"
 authors = [
     "Aditya Kumar <git@adityais.dev>",
     "David Tolnay <dtolnay@gmail.com>",
