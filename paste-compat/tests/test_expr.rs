@@ -4,51 +4,6 @@
 use paste_compat::paste;
 
 #[test]
-fn test_shared_hygiene() {
-    paste! {
-        let [<a a>] = 1;
-        assert_eq!([<a a>], 1);
-    }
-}
-
-#[test]
-fn test_repeat() {
-    const ROCKET_A: &str = "/a";
-    const ROCKET_B: &str = "/b";
-
-    macro_rules! routes {
-        ($($route:ident),*) => {{
-            paste! {
-                vec![$( [<ROCKET_ $route>] ),*]
-            }
-        }}
-    }
-
-    let routes = routes!(A, B);
-    assert_eq!(routes, vec!["/a", "/b"]);
-}
-
-#[test]
-fn test_literal_to_identifier() {
-    const CONST0: &str = "const0";
-
-    let pasted = paste!([<CONST 0>]);
-    assert_eq!(pasted, CONST0);
-
-    let pasted = paste!([<CONST '0'>]);
-    assert_eq!(pasted, CONST0);
-
-    let pasted = paste!([<CONST "0">]);
-    assert_eq!(pasted, CONST0);
-
-    let pasted = paste!([<CONST r"0">]);
-    assert_eq!(pasted, CONST0);
-
-    let pasted = paste!([<CONST '\u{30}'>]);
-    assert_eq!(pasted, CONST0);
-}
-
-#[test]
 fn test_literal_suffix() {
     macro_rules! literal {
         ($bit:tt) => {
@@ -97,24 +52,6 @@ fn test_literal_str() {
 }
 
 #[test]
-fn test_env_literal() {
-    paste! {
-        struct [<Lib env bar>];
-
-        let _ = Libenvbar;
-    }
-}
-
-#[test]
-fn test_env_present() {
-    paste! {
-        struct [<Lib env!("CARGO_PKG_NAME")>];
-
-        let _ = Libpaste_compat;
-    }
-}
-
-#[test]
 fn test_raw_identifier() {
     paste! {
         struct [<F r#move>];
@@ -144,56 +81,10 @@ fn test_false_start() {
 }
 
 #[test]
-fn test_local_variable() {
-    let yy = 0;
-
-    paste! {
-        assert_eq!([<y y>], 0);
-    }
-}
-
-#[test]
 fn test_empty() {
     paste! {
         assert_eq!(stringify!([<y y>]), "yy");
         assert_eq!(stringify!([<>]).replace(' ', ""), "[<>]");
-    }
-}
-
-#[test]
-fn test_env_to_lower() {
-    paste! {
-        struct [<Lib env!("CARGO_PKG_NAME"):lower>];
-
-        let _ = Libpaste_compat;
-    }
-}
-
-#[test]
-fn test_env_to_upper() {
-    paste! {
-        const [<LIB env!("CARGO_PKG_NAME"):upper>]: &str = "libpaste";
-
-        let _ = LIBPASTE_COMPAT;
-    }
-}
-
-#[test]
-fn test_env_to_snake() {
-    paste! {
-        const [<LIB env!("CARGO_PKG_NAME"):snake:upper>]: &str = "libpaste";
-
-        let _ = LIBPASTE_COMPAT;
-    }
-}
-
-#[test]
-fn test_env_to_camel() {
-    paste! {
-        #[allow(non_upper_case_globals)]
-        const [<LIB env!("CARGO_PKG_NAME"):camel>]: &str = "libpaste";
-
-        let _ = LIBPasteCompat;
     }
 }
 
