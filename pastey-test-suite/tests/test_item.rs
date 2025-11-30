@@ -369,7 +369,7 @@ mod test_join {
     }
 }
 
-mod test_replace {
+mod test_replace_string_literal {
     use pastey::paste;
 
     macro_rules! m {
@@ -397,5 +397,40 @@ mod test_replace {
     fn test_replace() {
         let _ = Command::Bar(CommandBar {});
         let _ = Command::Foo(CommandFoo {});
+    }
+}
+
+mod test_replace {
+    use pastey::paste;
+
+    macro_rules! m {
+        ($($command:ident, $prefix:tt),+) => {
+            paste! {
+                $(
+                    pub struct $command {}
+                )*
+
+                pub enum Command {
+                    $(
+                        [< $command:replace($prefix, "") >] ( $command )
+                    ),*
+                }
+            }
+        };
+    }
+
+    m! {
+        CommandFoo, Command,
+        CommandBar, Command,
+        HelloWorld, Hello,
+        Hello1234, 1234
+    }
+
+    #[test]
+    fn test_replace() {
+        let _ = Command::Bar(CommandBar {});
+        let _ = Command::Foo(CommandFoo {});
+        let _ = Command::World(HelloWorld {});
+        let _ = Command::Hello(Hello1234 {});
     }
 }
