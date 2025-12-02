@@ -11,3 +11,4 @@ use_original = []
 [dependencies]
 paste = { version = "1" }
 pastey = { path = "../" }
+rustversion = "1.0"
