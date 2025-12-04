@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `replace` modifier [#21](github.com/AS1100K/pastey/pull/21)
+- `replace` modifier [#21](https://github.com/AS1100K/pastey/pull/21)
 
 ## [0.1.1] - 2025-08-12
 
