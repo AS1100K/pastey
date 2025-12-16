@@ -166,13 +166,13 @@ identifiers by removing or substituting substrings.
 use pastey::paste;
 
 macro_rules! m {
-    ($($command:ident),+) => {
+    ($(($command:ident, $from:ident)),+) => {
         paste! {
             $(pub struct $command {})*
-            
+
             pub enum Command {
                 $(
-                    [< $command:replace("Command", "") >] ( $command )
+                    [< $command:replace($from, "") >] ( $command )
                 ),*
             }
         }
@@ -180,12 +180,14 @@ macro_rules! m {
 }
 
 m! {
-    CommandFoo,
-    CommandBar
+    (CommandFoo, Command),
+    (CommandBar, Command),
+    (HelloWorld, Hello)
 }
 
 let command_bar = Command::Bar(CommandBar {});
 let command_foo = Command::Foo(CommandFoo {});
+let command_hello = Command::World(HelloWorld {});
 ```
 
 ## Raw Identifier Generation
