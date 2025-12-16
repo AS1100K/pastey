@@ -71,7 +71,7 @@ pub(crate) fn parse(tokens: &mut Peekable<token_stream::IntoIter>) -> Result<Vec
                     };
 
                     segments.push(Segment::Env(LitStr {
-                        value: get_literal_string_value(&lit)?,
+                        value: get_literal_string_value(&lit, false, false)?,
                         span: lit.span(),
                     }));
 
@@ -294,11 +294,9 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
                 }
 
                 match (from, punct, to) {
-                    (
-                        Some(TokenTree::Literal(from)),
-                        Some(TokenTree::Punct(punct)),
-                        Some(TokenTree::Literal(to)),
-                    ) if punct.as_char() == ',' => {
+                    (Some(from), Some(TokenTree::Punct(punct)), Some(to))
+                        if punct.as_char() == ',' =>
+                    {
                         let last =
                             match evaluated.pop() {
                                 Some(last) => last,
@@ -309,8 +307,8 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
                                 )),
                             };
 
-                        let from_str = get_literal_string_value(&from)?;
-                        let to_str = get_literal_string_value(&to)?;
+                        let from_str = get_token_tree_string_value(&from)?;
+                        let to_str = get_token_tree_string_value(&to)?;
 
                         let new_ident = last.replace(&from_str, &to_str);
 
@@ -334,14 +332,27 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
     Ok(pasted)
 }
 
-fn get_literal_string_value(l: &Literal) -> Result<String> {
+fn get_literal_string_value(l: &Literal, parse_char: bool, parse_numbers: bool) -> Result<String> {
     let l_str = l.to_string();
 
-    if l_str.starts_with('"') && l_str.ends_with('"') && l_str.len() >= 2 {
+    if ((l_str.starts_with('"') && l_str.ends_with('"'))
+        || (parse_char && l_str.starts_with('\'') && l_str.ends_with('\'')))
+        && l_str.len() >= 2
+    {
         // TODO: maybe handle escape sequences in the string if
         // someone has a use case.
         Ok(String::from(&l_str[1..l_str.len() - 1]))
+    } else if parse_numbers {
+        Ok(l_str)
     } else {
         Err(Error::new(l.span(), "expected string literal"))
+    }
+}
+
+fn get_token_tree_string_value(t: &TokenTree) -> Result<String> {
+    match t {
+        TokenTree::Ident(ident) => Ok(ident.to_string()),
+        TokenTree::Literal(literal) => get_literal_string_value(literal, true, true),
+        _ => Err(Error::new(t.span(), "Expected either Ident, or Literal.")),
     }
 }
