@@ -12,6 +12,7 @@ keywords = ["macros"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/as1100k/pastey"
 rust-version = "1.54"
+include = ["CHANGELOG.md", "LICENSE-APACHE", "LICENSE-MIT", "README.md", "Cargo.toml", "src/**/*.rs"]
 
 [lib]
 proc-macro = true
