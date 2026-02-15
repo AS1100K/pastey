@@ -353,6 +353,17 @@ fn get_token_tree_string_value(t: &TokenTree) -> Result<String> {
     match t {
         TokenTree::Ident(ident) => Ok(ident.to_string()),
         TokenTree::Literal(literal) => get_literal_string_value(literal, true, true),
+        TokenTree::Group(group) if group.delimiter() == Delimiter::None => {
+            // Handle interpolated tokens from macro_rules (common in older Rust versions)
+            let mut inner = group.stream().into_iter();
+            if let Some(first) = inner.next() {
+                if inner.next().is_none() {
+                    // Single token in the group, recursively process it
+                    return get_token_tree_string_value(&first);
+                }
+            }
+            Err(Error::new(t.span(), "Expected either Ident, or Literal."))
+        }
         _ => Err(Error::new(t.span(), "Expected either Ident, or Literal.")),
     }
 }
