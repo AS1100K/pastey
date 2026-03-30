@@ -136,6 +136,10 @@ pub(crate) fn parse(tokens: &mut Peekable<token_stream::IntoIter>) -> Result<Vec
                     value: "#".to_string(),
                     span: punct.span(),
                 })),
+                '-' => segments.push(Segment::String(LitStr {
+                    value: "-".to_owned(),
+                    span: punct.span(),
+                })),
                 _ => return Err(Error::new(punct.span(), "unexpected punct")),
             },
             TokenTree::Group(group) => {

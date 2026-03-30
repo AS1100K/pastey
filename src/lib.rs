@@ -251,7 +251,12 @@ fn parse_bracket_as_segments(input: TokenStream, scope: Span) -> Result<Vec<Segm
                     }
                 }
             }
-            if string.value.contains(&['\\', '.', '+'][..])
+            // Numeric literals (e.g. `0.0`, `1.5f32`) start with a digit and may
+            // contain `.`. Allow them through; reject other literals that contain
+            // unsupported characters such as `\`, `+`, or `.`.
+            let is_numeric_literal = string.value.starts_with(|ch: char| ch.is_ascii_digit())
+                && !string.value.contains('+');
+            if (!is_numeric_literal && string.value.contains(&['\\', '.', '+'][..]))
                 || string.value.starts_with("b'")
                 || string.value.starts_with("b\"")
                 || string.value.starts_with("br\"")
@@ -259,6 +264,8 @@ fn parse_bracket_as_segments(input: TokenStream, scope: Span) -> Result<Vec<Segm
                 return Err(Error::new(string.span, "unsupported literal"));
             }
             let mut range = 0..string.value.len();
+            let is_quoted = string.value.starts_with("r\"")
+                || string.value.starts_with(&['"', '\''][..]);
             if string.value.starts_with("r\"") {
                 range.start += 2;
                 range.end -= 1;
@@ -266,7 +273,13 @@ fn parse_bracket_as_segments(input: TokenStream, scope: Span) -> Result<Vec<Segm
                 range.start += 1;
                 range.end -= 1;
             }
-            string.value = string.value[range].replace('-', "_");
+            // Only replace `-` with `_` in quoted string/char literal content.
+            // Numeric literals and bare `-` punct segments must not be altered.
+            string.value = if is_quoted {
+                string.value[range].replace('-', "_")
+            } else {
+                string.value[range].to_string()
+            };
         }
     }
 
@@ -289,6 +302,29 @@ fn pasted_to_tokens(mut pasted: String, span: Span) -> Result<TokenStream> {
         };
         tokens.extend(iter::once(literal));
         return Ok(tokens);
+    }
+
+    if pasted.starts_with('-') {
+        let rest = &pasted[1..];
+        if rest.starts_with(|ch: char| ch.is_ascii_digit()) {
+            let mut minus = TokenTree::Punct(Punct::new('-', Spacing::Alone));
+            minus.set_span(span);
+            tokens.extend(iter::once(minus));
+            let literal = match panic::catch_unwind(|| Literal::from_str(rest)) {
+                Ok(Ok(mut literal)) => {
+                    literal.set_span(span);
+                    TokenTree::Literal(literal)
+                }
+                Ok(Err(LexError { .. })) | Err(_) => {
+                    return Err(Error::new(
+                        span,
+                        &format!("`{:?}` is not a valid literal", pasted),
+                    ));
+                }
+            };
+            tokens.extend(iter::once(literal));
+            return Ok(tokens);
+        }
     }
 
     if pasted.starts_with('\'') {
