@@ -33,6 +33,7 @@ if [[ "$1" == "1.56.0" ]]; then
     cargo update -p ryu --precise 1.0.18
     cargo update -p itoa --precise 1.0.6
     cargo update -p unicode-ident --precise 1.0.13
+    cargo update -p dissimilar --precise 1.0.10
 fi
 
 cargo test
