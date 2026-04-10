@@ -434,3 +434,198 @@ mod test_replace {
         let _ = Command::Hello(Hello1234 {});
     }
 }
+
+mod test_item_macro {
+    use pastey::item;
+
+    item! {
+        struct [< TestItemMacro >] {
+            value: u32,
+        }
+    }
+
+    #[test]
+    fn test_item_macro_coverage() {
+        let obj = TestItemMacro { value: 42 };
+        assert_eq!(obj.value, 42);
+    }
+}
+
+#[allow(non_snake_case)]
+mod test_replace_none_delimited_expr_arg {
+    use pastey::paste;
+
+    macro_rules! replace_with_expr_metavar {
+        ($name:ident, $from:expr, $to:expr) => {
+            paste! {
+                fn [< $name:replace($from, $to) >]() {}
+            }
+        };
+    }
+    replace_with_expr_metavar!(HelloWorld, "Hello", "Hi");
+
+    #[test]
+    fn test() {
+        HiWorld();
+    }
+}
+
+#[test]
+fn test_replace_char_literal_arg() {
+    pastey::paste! {
+        struct [<Foo:replace('o', 'a')>];
+    }
+    let _ = Faa;
+
+    pastey::paste! {
+        #[allow(non_camel_case_types)]
+        struct [<hello_world:replace("_world", 'X')>];
+    }
+    let _ = helloX;
+}
+
+mod test_none_group_before_double_colon_in_attr {
+    use pastey::paste;
+
+    macro_rules! allow_lint_group {
+        ($lint_group:ident) => {
+            paste! {
+                #[allow($lint_group::pedantic)]
+                pub struct S;
+            }
+        };
+    }
+
+    allow_lint_group!(clippy);
+
+    #[test]
+    fn test() {
+        let _: S;
+    }
+}
+
+mod test_none_group_complex_type_before_double_colon {
+    use pastey::paste;
+
+    macro_rules! m {
+        ($t:ty) => {
+            paste! {
+                pub const NONE_GROUP_TY_STR: &str = stringify!($t::method);
+            }
+        };
+    }
+
+    m!(Vec<u8>);
+
+    #[test]
+    fn test() {
+        assert!(!NONE_GROUP_TY_STR.is_empty());
+    }
+}
+
+mod test_non_colon_punct_in_single_interpolation_group {
+    use pastey::paste;
+
+    macro_rules! m {
+        ($e:expr) => {
+            paste! {
+                pub const EXPR_STR: &str = stringify!($e);
+            }
+        };
+    }
+    m!(a + b);
+
+    #[test]
+    fn test() {
+        assert_eq!(EXPR_STR, "a + b");
+    }
+}
+
+mod test_none_group_before_non_colon_puncts {
+    use pastey::paste;
+
+    macro_rules! m {
+        ($t:ty) => {
+            paste! {
+                pub const PUNCT_STR: &str = stringify!($t && true);
+            }
+        };
+    }
+    m!(Vec<u8>);
+
+    #[test]
+    fn test() {
+        assert!(!PUNCT_STR.is_empty());
+    }
+}
+
+mod test_replace_with_numeric_to_arg {
+    use pastey::paste;
+
+    paste! {
+        pub struct [<Foo:replace("oo", 42)>];
+    }
+
+    #[test]
+    fn test() {
+        let _ = F42;
+    }
+}
+
+mod test_item_lifetime_paste {
+    use pastey::item;
+
+    item! {
+        pub struct LifetimeRef<[<'a>]>(#[allow(dead_code)] pub &[<'a>] ());
+    }
+
+    #[test]
+    fn test_lifetime_via_item() {
+        let _: LifetimeRef<'_>;
+    }
+}
+
+mod test_item_raw_mode_paste {
+    use pastey::item;
+
+    macro_rules! raw_ident_via_item {
+        ($kw:ident) => {
+            item! {
+                #[allow(non_camel_case_types)]
+                pub struct [<# $kw Via Item>];
+            }
+        };
+    }
+    raw_ident_via_item!(loop);
+
+    #[test]
+    fn test_raw_ident_via_item() {
+        let _ = loopViaItem;
+    }
+}
+
+mod test_item_char_unicode_paste {
+    use pastey::item;
+
+    item! {
+        pub struct [<Char '\u{55}' nit>];
+    }
+
+    #[test]
+    fn test_char_unicode_via_item() {
+        let _ = CharUnit;
+    }
+}
+
+mod test_item_raw_str_paste {
+    use pastey::item;
+
+    item! {
+        pub struct [<Raw r"hello" Str>];
+    }
+
+    #[test]
+    fn test_raw_str_via_item() {
+        let _ = RawhelloStr;
+    }
+}

@@ -1,0 +1,10 @@
+error: Expected either Ident, or Literal.
+  --> tests/ui/multi-token-replace-arg.rs:6:32
+   |
+ 6 |             fn [< foo :replace($e, bar) >]() {}
+   |                                ^^
+...
+11 | m!(1 + 2);
+   | --------- in this macro invocation
+   |
+   = note: this error originates in the macro `m` (in Nightly builds, run with -Z macro-backtrace for more info)

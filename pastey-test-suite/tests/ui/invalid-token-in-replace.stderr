@@ -1,0 +1,5 @@
+error: Expected either Ident, or Literal.
+ --> tests/ui/invalid-token-in-replace.rs:4:24
+  |
+4 |     fn [< foo :replace(!, "bar") >]() {}
+  |                        ^

@@ -304,3 +304,14 @@ fn test_top_level_none_delimiter() {
 
     clone!(&A).consume_self();
 }
+
+#[test]
+fn test_expr_macro_coverage() {
+    use pastey::expr;
+
+    expr! {
+        const [< EXPR_TEST >]: &str = "hello";
+    }
+
+    assert_eq!(EXPR_TEST, "hello");
+}

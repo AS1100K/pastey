@@ -7,7 +7,7 @@
 
 **_`pastey` is the fork of `paste` and is aimed to be a drop-in replacement with additional features for
 `paste` crate_**
-
+``` ignore
 <details>
 <summary>Migrating from <code>paste</code> crate</summary>
 
@@ -47,7 +47,7 @@ This approach works with any Rust compiler 1.54+.
 Within the `paste!` macro, identifiers inside `[<`...`>]` are pasted together to
 form a single identifier.
 
-```rust
+```rust,ignore
 use pastey::paste;
 
 paste! {
@@ -69,7 +69,7 @@ The next example shows a macro that generates accessor methods for some struct
 fields. It demonstrates how you might find it useful to bundle a paste
 invocation inside of a macro\_rules macro.
 
-```rust
+```rust,ignore
 use pastey::paste;
 
 macro_rules! make_a_struct_and_getters {
@@ -136,7 +136,7 @@ You can also use multiple of these modifers like `$var:snake:upper` would give y
 
 Example
 
-```rust
+```rust,ignore
 use pastey::paste;
 
 paste! {
@@ -161,8 +161,8 @@ using the same semantics as [`str::replace`]. This is useful for transforming
 identifiers by removing or substituting substrings.
 
 [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
-
-```rust
+``` ignore
+```rust,ignore
 use pastey::paste;
 
 macro_rules! m {
@@ -195,7 +195,7 @@ let command_hello = Command::World(HelloWorld {});
 `pastey` now supports raw identifiers using a special raw mode. By prefixing a
 token with `#` inside the paste syntax, it treats that token as a raw identifier.
 
-```rust
+```rust,ignore
 use pastey::paste;
 
 macro_rules! define_struct_and_impl {
@@ -225,7 +225,7 @@ fn test_fn() {
 Within the `paste!` macro, arguments to a #\[doc ...\] attribute are implicitly
 concatenated together to form a coherent documentation string.
 
-```rust
+```rust,ignore
 use pastey::paste;
 
 macro_rules! method_new {

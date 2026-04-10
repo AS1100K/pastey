@@ -14,6 +14,12 @@ repository = "https://github.com/as1100k/pastey"
 rust-version = "1.54"
 include = ["CHANGELOG.md", "LICENSE-APACHE", "LICENSE-MIT", "README.md", "Cargo.toml", "src/**/*.rs"]
 
+[workspace]
+members =[
+    "paste-compat",
+    "pastey-test-suite",
+]
+
 [lib]
 proc-macro = true
 

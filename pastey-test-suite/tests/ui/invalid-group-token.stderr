@@ -1,0 +1,5 @@
+error: Expected either Ident, or Literal.
+  --> tests/ui/invalid-group-token.rs:11:4
+   |
+11 | m!((a b));
+   |    ^^^^^

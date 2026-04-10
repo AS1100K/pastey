@@ -1,0 +1,5 @@
+error: unexpected lifetime
+ --> tests/ui/unexpected-lifetime.rs:4:14
+  |
+4 |     fn [< 'a 'b >]() {}
+  |              ^^
