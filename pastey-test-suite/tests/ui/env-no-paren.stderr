@@ -1,0 +1,5 @@
+error: expected `(`
+ --> tests/ui/env-no-paren.rs:4:16
+  |
+4 |     fn [< env! >]() {}
+  |                ^

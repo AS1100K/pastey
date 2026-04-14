@@ -1,0 +1,5 @@
+error: expected string literal
+ --> tests/ui/env-non-literal-arg.rs:4:15
+  |
+4 |     fn [<env!(foo)>]() {}
+  |               ^^^

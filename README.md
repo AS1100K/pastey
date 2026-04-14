@@ -7,7 +7,6 @@
 
 **_`pastey` is the fork of `paste` and is aimed to be a drop-in replacement with additional features for
 `paste` crate_**
-
 <details>
 <summary>Migrating from <code>paste</code> crate</summary>
 
@@ -111,6 +110,12 @@ make_a_struct_and_getters!(S { a, b, c });
 fn call_some_getters(s: &S) -> bool {
     s.get_a() == s.get_b() && s.get_c().is_empty()
 }
+let s = S {
+    a: String::from("x"),
+    b: String::from("x"),
+    c: String::new(),
+ };
+ assert!(call_some_getters(&s));
 ```
 
 ## Case conversion
@@ -161,7 +166,6 @@ using the same semantics as [`str::replace`]. This is useful for transforming
 identifiers by removing or substituting substrings.
 
 [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
-
 ```rust
 use pastey::paste;
 
@@ -218,6 +222,7 @@ fn test_fn() {
     let _ = Loop::r#loop();
     let _ = Loopxyz::loop_xyz();
 }
+test_fn();
 ```
 
 ## Pasting documentation strings
@@ -232,7 +237,7 @@ macro_rules! method_new {
     ($ret:ident) => {
         paste! {
             #[doc = "Create a new `" $ret "` object."]
-            pub fn new() -> $ret { todo!() }
+            pub fn new() -> $ret { $ret {} }
         }
     };
 }
@@ -240,6 +245,7 @@ macro_rules! method_new {
 pub struct Pastey {}
 
 method_new!(Pastey);  // expands to #[doc = "Create a new `Paste` object"]
+let _ = new();
 ```
 
 #### Credits

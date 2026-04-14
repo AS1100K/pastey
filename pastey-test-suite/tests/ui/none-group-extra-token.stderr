@@ -1,0 +1,5 @@
+error: unexpected token
+ --> tests/ui/none-group-extra-token.rs:9:6
+  |
+9 | m!(a > b);
+  |      ^
