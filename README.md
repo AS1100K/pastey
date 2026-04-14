@@ -7,7 +7,6 @@
 
 **_`pastey` is the fork of `paste` and is aimed to be a drop-in replacement with additional features for
 `paste` crate_**
-``` ignore
 <details>
 <summary>Migrating from <code>paste</code> crate</summary>
 
@@ -47,7 +46,7 @@ This approach works with any Rust compiler 1.54+.
 Within the `paste!` macro, identifiers inside `[<`...`>]` are pasted together to
 form a single identifier.
 
-```rust,ignore
+```rust
 use pastey::paste;
 
 paste! {
@@ -69,7 +68,7 @@ The next example shows a macro that generates accessor methods for some struct
 fields. It demonstrates how you might find it useful to bundle a paste
 invocation inside of a macro\_rules macro.
 
-```rust,ignore
+```rust
 use pastey::paste;
 
 macro_rules! make_a_struct_and_getters {
@@ -111,6 +110,12 @@ make_a_struct_and_getters!(S { a, b, c });
 fn call_some_getters(s: &S) -> bool {
     s.get_a() == s.get_b() && s.get_c().is_empty()
 }
+let s = S {
+    a: String::from("x"),
+    b: String::from("x"),
+    c: String::new(),
+ };
+ assert!(call_some_getters(&s));
 ```
 
 ## Case conversion
@@ -136,7 +141,7 @@ You can also use multiple of these modifers like `$var:snake:upper` would give y
 
 Example
 
-```rust,ignore
+```rust
 use pastey::paste;
 
 paste! {
@@ -161,8 +166,7 @@ using the same semantics as [`str::replace`]. This is useful for transforming
 identifiers by removing or substituting substrings.
 
 [`str::replace`]: https://doc.rust-lang.org/std/primitive.str.html#method.replace
-``` ignore
-```rust,ignore
+```rust
 use pastey::paste;
 
 macro_rules! m {
@@ -195,7 +199,7 @@ let command_hello = Command::World(HelloWorld {});
 `pastey` now supports raw identifiers using a special raw mode. By prefixing a
 token with `#` inside the paste syntax, it treats that token as a raw identifier.
 
-```rust,ignore
+```rust
 use pastey::paste;
 
 macro_rules! define_struct_and_impl {
@@ -218,6 +222,7 @@ fn test_fn() {
     let _ = Loop::r#loop();
     let _ = Loopxyz::loop_xyz();
 }
+test_fn();
 ```
 
 ## Pasting documentation strings
@@ -225,14 +230,14 @@ fn test_fn() {
 Within the `paste!` macro, arguments to a #\[doc ...\] attribute are implicitly
 concatenated together to form a coherent documentation string.
 
-```rust,ignore
+```rust
 use pastey::paste;
 
 macro_rules! method_new {
     ($ret:ident) => {
         paste! {
             #[doc = "Create a new `" $ret "` object."]
-            pub fn new() -> $ret { todo!() }
+            pub fn new() -> $ret { $ret {} }
         }
     };
 }
@@ -240,6 +245,7 @@ macro_rules! method_new {
 pub struct Pastey {}
 
 method_new!(Pastey);  // expands to #[doc = "Create a new `Paste` object"]
+let _ = new();
 ```
 
 #### Credits

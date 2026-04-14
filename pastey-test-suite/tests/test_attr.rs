@@ -92,7 +92,8 @@ fn test_paste_raw_mode() {
 #[test]
 fn test_leading_colons_attr() {
     paste! {
-        #[::core::prelude::v1::derive(Copy, Clone)]
+        #[allow(dead_code)]
+        #[cfg_attr(any(), ::core::prelude::v1::derive(Copy, Clone))]
         struct LeadingColons(u32);
     }
 
@@ -113,6 +114,7 @@ fn test_doc_raw_mode_unreachable_note() {
 #[test]
 fn test_attr_paren_comma_split() {
     paste! {
+        #[allow(dead_code)]
         #[derive(Clone, Copy)]
         struct CommaInParen(u8);
     }

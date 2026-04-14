@@ -491,7 +491,7 @@ mod doc_tests {
 
     /// ```compile_fail
     /// use pastey::paste;
-    /// paste! { const _: &str = [<"byte\string">]; }
+    /// paste! { const _: &str = [<"byte\\string">]; }
     /// ```
     fn test_error_unsupported_escaped_string() {}
 
@@ -556,9 +556,9 @@ mod doc_tests {
 
     /// ```compile_fail
     /// use pastey::paste;
-    /// paste! { const _: &str = [<"unterminated>]; }
+    /// paste! { const _: &str = [<"terminated>]; }
     /// ```
-    fn test_error_unterminated_string_literal() {}
+    fn test_error_terminated_string_literal() {}
 
     /// ```compile_fail
     /// use pastey::paste;
