@@ -90,6 +90,27 @@ jobs:
       - run: cd ./pastey-test-suite && cargo miri setup && cargo miri test && cd ../
       - run: cd ./paste-compat && cargo miri setup && cargo miri test && cd ../
 
+  coverage:
+    name: Coverage
+    needs: pre_ci
+    if: needs.pre_ci.outputs.continue
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: llvm-tools-preview
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - run: cargo +nightly llvm-cov --workspace --html --branch --exclude-from-report pastey-test-suite --doctests
+        env:
+          RUSTFLAGS: -C instrument-coverage -C llvm-args=-pgo-warn-missing-function
+      - run: cargo +nightly llvm-cov report --branch
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: target/llvm-cov/html/
+
   outdated:
     name: Outdated
     runs-on: ubuntu-latest
