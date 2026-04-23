@@ -7,6 +7,7 @@
     clippy::needless_doctest_main,
     clippy::too_many_lines
 )]
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
 extern crate proc_macro;
 
@@ -325,9 +326,106 @@ fn pasted_to_tokens(mut pasted: String, span: Span) -> Result<TokenStream> {
     Ok(tokens)
 }
 
+// This is helper function for testing `expand_attr` and `parse_bracket_as_segments` in isolation, since they are not directly exposed.
+// Also TokenStream we can not construct directly in tests, so we need to construct them using proc_macro functions and then call the functions we want to test.
+// These tests are for testing the error handling of these functions, since the success cases are already tested through the public `paste` macro and its doctests.
+// We can test those cases directly using paste macro because we have pre-validation of most error cases because of that covering the later stage of same error is not possible.
+#[cfg_attr(coverage_nightly, coverage(off))]
+fn expand_attr_test(scope: Span) {
+    {
+        let empty_none = TokenTree::Group(Group::new(Delimiter::None, TokenStream::new()));
+        let mut attr_ts = TokenStream::new();
+        attr_ts.extend([TokenTree::Ident(Ident::new("doc", scope))]);
+        attr_ts.extend([TokenTree::Punct(Punct::new('=', Spacing::Alone))]);
+        attr_ts.extend([empty_none]);
+        let mut flag = false;
+        let _ = expand_attr(attr_ts, scope, &mut flag);
+    }
+
+    {
+        let mut attr_ts = TokenStream::new();
+        attr_ts.extend([TokenTree::Ident(Ident::new("doc", scope))]);
+        attr_ts.extend([TokenTree::Punct(Punct::new('=', Spacing::Alone))]);
+        attr_ts.extend([TokenTree::Punct(Punct::new('\'', Spacing::Joint))]);
+        attr_ts.extend([TokenTree::Punct(Punct::new('\'', Spacing::Alone))]);
+        let _ = expand_attr(attr_ts, scope, &mut false);
+    }
+
+    {
+        let item_ts = TokenStream::from_str("doc = : \"world\"").unwrap();
+        let paren_group = Group::new(Delimiter::Parenthesis, item_ts);
+        let mut attr_ts = TokenStream::new();
+        attr_ts.extend([TokenTree::Ident(Ident::new("allow", scope))]);
+        attr_ts.extend([TokenTree::Group(paren_group)]);
+        let _ = expand_attr(attr_ts, scope, &mut false);
+    }
+
+    {
+        let mut paren_ts = TokenStream::from_str("doc = : \"world\"").unwrap();
+        paren_ts.extend([TokenTree::Punct(Punct::new(',', Spacing::Alone))]);
+        paren_ts.extend([TokenTree::Ident(Ident::new("allow", scope))]);
+        let paren_group = Group::new(Delimiter::Parenthesis, paren_ts);
+        let mut attr_ts = TokenStream::new();
+        attr_ts.extend([TokenTree::Ident(Ident::new("cfg_attr", scope))]);
+        attr_ts.extend([TokenTree::Group(paren_group)]);
+        let _ = expand_attr(attr_ts, scope, &mut false);
+    }
+
+    {
+        let mut contains = false;
+        let _ = expand(
+            TokenStream::from_str("# [ doc = : \"world\" ] fn f () { }").unwrap(),
+            &mut contains,
+            true,
+        );
+    }
+}
+
+#[cfg_attr(coverage_nightly, coverage(off))]
+fn parse_bracket_as_segments_test(scope: Span) {
+    {
+        let _ = parse_bracket_as_segments(TokenStream::from_str("foo >").unwrap(), scope);
+        let _ = parse_bracket_as_segments(TokenStream::new(), scope);
+        let _ = parse_bracket_as_segments(TokenStream::from_str("< foo").unwrap(), scope);
+        let _ = parse_bracket_as_segments(TokenStream::from_str("< foo > extra").unwrap(), scope);
+        let _ = parse_bracket_as_segments(TokenStream::from_str("< foo +").unwrap(), scope);
+        let _ = pasted_to_tokens(String::from("0invalid"), scope);
+        let _ = pasted_to_tokens(String::from("0 "), scope);
+    }
+
+    let _ = parse_bracket_as_segments(TokenStream::from_str("< env !").unwrap(), scope);
+    {
+        let mut inner_ts = TokenStream::new();
+        inner_ts.extend([TokenTree::Punct(Punct::new('@', Spacing::Alone))]);
+        let none_group = TokenTree::Group(Group::new(Delimiter::None, inner_ts));
+        let mut ts = TokenStream::new();
+        ts.extend([TokenTree::Punct(Punct::new('<', Spacing::Alone))]);
+        ts.extend([none_group]);
+        ts.extend([TokenTree::Punct(Punct::new('>', Spacing::Alone))]);
+        let _ = parse_bracket_as_segments(ts, scope);
+    }
+}
+
+#[cfg_attr(coverage_nightly, coverage(off))]
+#[proc_macro]
+#[doc(hidden)]
+pub fn paste_test(input: TokenStream) -> TokenStream {
+    let scope = Span::call_site();
+    expand_attr_test(scope);
+    parse_bracket_as_segments_test(scope);
+    input
+}
+
 #[cfg(doctest)]
 #[doc(hidden)]
 mod doc_tests {
+    /// ```
+    /// use pastey::paste_test;
+    /// paste_test!('\u{48}');
+    /// eprintln!("This line should be printed, indicating that the test ran without panicking.");
+    /// ```
+    fn paste_test_macro_with_no_parameter() {}
+
     /// ```
     /// use pastey::paste;
     /// let arr: [u8; 3] = paste!([1u8, 2, 3]);
