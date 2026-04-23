@@ -94,11 +94,9 @@ pub(crate) fn parse(tokens: &mut Peekable<token_stream::IntoIter>) -> Result<Vec
                     span: lit.span(),
                 }));
             }
+            // Note: `_` is always tokenized as an Ident, never a Punct, so there
+            // is no `'_'` arm here, it would be unreachable dead code.
             TokenTree::Punct(punct) => match punct.as_char() {
-                '_' => segments.push(Segment::String(LitStr {
-                    value: "_".to_owned(),
-                    span: punct.span(),
-                })),
                 '\'' => segments.push(Segment::Apostrophe(punct.span())),
                 ':' => {
                     let colon_span = punct.span();
@@ -349,7 +347,7 @@ fn get_literal_string_value(l: &Literal, parse_char: bool, parse_numbers: bool) 
     }
 }
 
-fn get_token_tree_string_value(t: &TokenTree) -> Result<String> {
+pub(crate) fn get_token_tree_string_value(t: &TokenTree) -> Result<String> {
     match t {
         TokenTree::Ident(ident) => Ok(ident.to_string()),
         TokenTree::Literal(literal) => get_literal_string_value(literal, true, true),
