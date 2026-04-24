@@ -14,6 +14,7 @@ extern crate proc_macro;
 mod attr;
 mod error;
 mod segment;
+mod test_helpers;
 
 use crate::attr::expand_attr;
 use crate::error::{Error, Result};
@@ -237,8 +238,11 @@ fn check_close_angle_token(token: Option<TokenTree>, scope: Span) -> Result<()> 
 
 //Coverage note:
 // Uncovered lines (the fallthrough/else paths of the two if-let checks):
-//   if let Ok(unsigned) = u32::from_str_radix(hex, 16) {   // Err path never hit
-//       if let Some(ch) = char::from_u32(unsigned) {        // None path never hit
+//   if let Ok(unsigned) = u32::from_str_radix(hex, 16) {
+//       if let Some(ch) = char::from_u32(unsigned) {
+//             ...
+//        }// None path never covered
+//   }// Err path never covered
 //
 // These paths can never be reached because:
 // - The hex string comes from a Literal that the Rust compiler already parsed.
@@ -368,95 +372,18 @@ fn pasted_to_tokens(mut pasted: String, span: Span) -> Result<TokenStream> {
     Ok(tokens)
 }
 
-//Below functions and macro is just for testing the internal functions that are not directly exposed 
+//Below functions and macro is just for testing the internal functions that are not directly exposed
 //and can not be tested through public paste macro because of pre-validation of most error cases in it,
 //so we can not cover those error cases through it.
 //Also some of the inputs for testing those functions can not be constructed directly in tests because of TokenStream,
 //so we need to construct them using proc_macro functions and then call the functions we want to test.
-
-#[cfg_attr(coverage_nightly, coverage(off))]
-fn expand_attr_test(scope: Span) {
-    {
-        let empty_none = TokenTree::Group(Group::new(Delimiter::None, TokenStream::new()));
-        let mut attr_ts = TokenStream::new();
-        attr_ts.extend([TokenTree::Ident(Ident::new("doc", scope))]);
-        attr_ts.extend([TokenTree::Punct(Punct::new('=', Spacing::Alone))]);
-        attr_ts.extend([empty_none]);
-        let mut flag = false;
-        let _ = expand_attr(attr_ts, scope, &mut flag);
-    }
-
-    {
-        let mut attr_ts = TokenStream::new();
-        attr_ts.extend([TokenTree::Ident(Ident::new("doc", scope))]);
-        attr_ts.extend([TokenTree::Punct(Punct::new('=', Spacing::Alone))]);
-        attr_ts.extend([TokenTree::Punct(Punct::new('\'', Spacing::Joint))]);
-        attr_ts.extend([TokenTree::Punct(Punct::new('\'', Spacing::Alone))]);
-        let _ = expand_attr(attr_ts, scope, &mut false);
-    }
-
-    {
-        let item_ts = TokenStream::from_str("doc = : \"world\"").unwrap();
-        let paren_group = Group::new(Delimiter::Parenthesis, item_ts);
-        let mut attr_ts = TokenStream::new();
-        attr_ts.extend([TokenTree::Ident(Ident::new("allow", scope))]);
-        attr_ts.extend([TokenTree::Group(paren_group)]);
-        let _ = expand_attr(attr_ts, scope, &mut false);
-    }
-
-    {
-        let mut paren_ts = TokenStream::from_str("doc = : \"world\"").unwrap();
-        paren_ts.extend([TokenTree::Punct(Punct::new(',', Spacing::Alone))]);
-        paren_ts.extend([TokenTree::Ident(Ident::new("allow", scope))]);
-        let paren_group = Group::new(Delimiter::Parenthesis, paren_ts);
-        let mut attr_ts = TokenStream::new();
-        attr_ts.extend([TokenTree::Ident(Ident::new("cfg_attr", scope))]);
-        attr_ts.extend([TokenTree::Group(paren_group)]);
-        let _ = expand_attr(attr_ts, scope, &mut false);
-    }
-
-    {
-        let mut contains = false;
-        let _ = expand(
-            TokenStream::from_str("# [ doc = : \"world\" ] fn f () { }").unwrap(),
-            &mut contains,
-            true,
-        );
-    }
-}
-
-#[cfg_attr(coverage_nightly, coverage(off))]
-fn parse_bracket_as_segments_test(scope: Span) {
-    {
-        let _ = parse_bracket_as_segments(TokenStream::from_str("foo >").unwrap(), scope);
-        let _ = parse_bracket_as_segments(TokenStream::new(), scope);
-        let _ = parse_bracket_as_segments(TokenStream::from_str("< foo").unwrap(), scope);
-        let _ = parse_bracket_as_segments(TokenStream::from_str("< foo > extra").unwrap(), scope);
-        let _ = parse_bracket_as_segments(TokenStream::from_str("< foo +").unwrap(), scope);
-        let _ = pasted_to_tokens(String::from("0invalid"), scope);
-        let _ = pasted_to_tokens(String::from("0 "), scope);
-    }
-
-    let _ = parse_bracket_as_segments(TokenStream::from_str("< env !").unwrap(), scope);
-    {
-        let mut inner_ts = TokenStream::new();
-        inner_ts.extend([TokenTree::Punct(Punct::new('@', Spacing::Alone))]);
-        let none_group = TokenTree::Group(Group::new(Delimiter::None, inner_ts));
-        let mut ts = TokenStream::new();
-        ts.extend([TokenTree::Punct(Punct::new('<', Spacing::Alone))]);
-        ts.extend([none_group]);
-        ts.extend([TokenTree::Punct(Punct::new('>', Spacing::Alone))]);
-        let _ = parse_bracket_as_segments(ts, scope);
-    }
-}
-
 #[cfg_attr(coverage_nightly, coverage(off))]
 #[proc_macro]
 #[doc(hidden)]
 pub fn paste_test(input: TokenStream) -> TokenStream {
     let scope = Span::call_site();
-    expand_attr_test(scope);
-    parse_bracket_as_segments_test(scope);
+    test_helpers::expand_attr_test(scope);
+    test_helpers::parse_bracket_as_segments_test(scope);
 
     {
         let mut multi_inner = TokenStream::new();
