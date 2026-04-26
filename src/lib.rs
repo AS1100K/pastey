@@ -398,17 +398,23 @@ pub fn paste_test(input: TokenStream) -> TokenStream {
         let _ = segment::get_token_tree_string_value(&empty_none);
     }
 
-    input
+    // Prepend a guard so calling paste_test! is a compile error.
+    let mut out = TokenStream::from_str(
+        "#compile_error!(\"paste_test! is for internal coverage testing only and must not be called outside of test context\");",
+    )
+    .unwrap();
+    out.extend(input);
+    out
 }
 
 #[cfg(doctest)]
 #[doc(hidden)]
 mod doc_tests {
-    /// ```
+    /// ```compile_fail
     /// use pastey::paste_test;
-    /// paste_test!('\u{48}');
+    /// paste_test!("test");
     /// ```
-    fn paste_test_macro_with_no_parameter() {}
+    fn paste_test_macro_for_internal_coverage() {}
 
     /// ```
     /// use pastey::paste;
