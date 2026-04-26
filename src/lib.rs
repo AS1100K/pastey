@@ -217,7 +217,7 @@ fn is_paste_operation(input: &TokenStream) -> bool {
     }
 }
 
-//Coverage note:
+// Coverage note:
 // Uncovered line -Some(wrong) => return Err(Error::new(wrong.span(), "expected `>`")),
 //
 // This line can never be reached because segment::parse stops only when it
@@ -236,7 +236,7 @@ fn check_close_angle_token(token: Option<TokenTree>, scope: Span) -> Result<()> 
     }
 }
 
-//Coverage note:
+// Coverage note:
 // Uncovered lines (the fallthrough/else paths of the two if-let checks):
 //   if let Ok(unsigned) = u32::from_str_radix(hex, 16) {
 //       if let Some(ch) = char::from_u32(unsigned) {
@@ -372,11 +372,11 @@ fn pasted_to_tokens(mut pasted: String, span: Span) -> Result<TokenStream> {
     Ok(tokens)
 }
 
-//Below functions and macro is just for testing the internal functions that are not directly exposed
-//and can not be tested through public paste macro because of pre-validation of most error cases in it,
-//so we can not cover those error cases through it.
-//Also some of the inputs for testing those functions can not be constructed directly in tests because of TokenStream,
-//so we need to construct them using proc_macro functions and then call the functions we want to test.
+// Below functions and macro is just for testing the internal functions that are not directly exposed
+// and can not be tested through public paste macro because of pre-validation of most error cases in it,
+// so we can not cover those error cases through it.
+// Also some of the inputs for testing those functions can not be constructed directly in tests because of TokenStream,
+// so we need to construct them using proc_macro functions and then call the functions we want to test.
 #[cfg_attr(coverage_nightly, coverage(off))]
 #[proc_macro]
 #[doc(hidden)]
