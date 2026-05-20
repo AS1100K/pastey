@@ -116,6 +116,12 @@ let s = S {
     c: String::new(),
  };
  assert!(call_some_getters(&s));
+ let s2 = S {
+     a: String::from("x"),
+     b: String::from("y"),
+     c: String::new(),
+ };
+ assert!(!call_some_getters(&s2));
 ```
 
 ## Case conversion

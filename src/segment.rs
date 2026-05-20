@@ -94,11 +94,9 @@ pub(crate) fn parse(tokens: &mut Peekable<token_stream::IntoIter>) -> Result<Vec
                     span: lit.span(),
                 }));
             }
+            // Note: `_` is always tokenized as an Ident, never a Punct, so there
+            // is no `'_'` arm here, it would be unreachable dead code.
             TokenTree::Punct(punct) => match punct.as_char() {
-                '_' => segments.push(Segment::String(LitStr {
-                    value: "_".to_owned(),
-                    span: punct.span(),
-                })),
                 '\'' => segments.push(Segment::Apostrophe(punct.span())),
                 ':' => {
                     let colon_span = punct.span();
@@ -332,13 +330,30 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
     Ok(pasted)
 }
 
+// The three defensive sub-conditions below can never evaluate to false when called
+// from get_literal_string_value with a real proc_macro::Literal, because-
+//
+//   ends_with('"')   — the Rust tokenizer rejects unterminated string literals before
+//                      the macro receives them, so starts_with('"') implies ends_with('"').
+//   ends_with('\'')  — same: the tokenizer rejects unterminated char literals.
+//   len() >= 2       — impossible once both prefix and suffix chars are confirmed present.
+//
+// These checks are kept for correctness in case this function is called with an
+// arbitrary &str in the future.  The false branches are exercised by the
+// unit tests below, which call is_quoted_string_or_char directly
+// with raw &str values (e.g. "\"abc", "'abc", "\"").
+// proc_macro::Literal has no constructor that produces such malformed tokens, so
+// the test_helpers.rs (with paste_test macro) path cannot cover these branches.
+fn is_quoted_string_or_char(l_str: &str, parse_char: bool) -> bool {
+    ((l_str.starts_with('"') && l_str.ends_with('"'))
+        || (parse_char && l_str.starts_with('\'') && l_str.ends_with('\'')))
+        && l_str.len() >= 2
+}
+
 fn get_literal_string_value(l: &Literal, parse_char: bool, parse_numbers: bool) -> Result<String> {
     let l_str = l.to_string();
 
-    if ((l_str.starts_with('"') && l_str.ends_with('"'))
-        || (parse_char && l_str.starts_with('\'') && l_str.ends_with('\'')))
-        && l_str.len() >= 2
-    {
+    if is_quoted_string_or_char(&l_str, parse_char) {
         // TODO: maybe handle escape sequences in the string if
         // someone has a use case.
         Ok(String::from(&l_str[1..l_str.len() - 1]))
@@ -349,7 +364,7 @@ fn get_literal_string_value(l: &Literal, parse_char: bool, parse_numbers: bool) 
     }
 }
 
-fn get_token_tree_string_value(t: &TokenTree) -> Result<String> {
+pub(crate) fn get_token_tree_string_value(t: &TokenTree) -> Result<String> {
     match t {
         TokenTree::Ident(ident) => Ok(ident.to_string()),
         TokenTree::Literal(literal) => get_literal_string_value(literal, true, true),
@@ -365,6 +380,22 @@ fn get_token_tree_string_value(t: &TokenTree) -> Result<String> {
             Err(Error::new(t.span(), "Expected either Ident, or Literal."))
         }
         _ => Err(Error::new(t.span(), "Expected either Ident, or Literal.")),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_quoted_string_or_char;
+
+    #[test]
+    fn test_is_quoted_string_or_char() {
+        assert!(is_quoted_string_or_char("\"hello\"", false));
+        assert!(!is_quoted_string_or_char("abc", false));
+        assert!(!is_quoted_string_or_char("\"", false));
+        assert!(!is_quoted_string_or_char("\"abc", false));
+        assert!(is_quoted_string_or_char("'a'", true));
+        assert!(!is_quoted_string_or_char("'abc", true));
+        assert!(!is_quoted_string_or_char("abc", true));
     }
 }
 
@@ -520,4 +551,13 @@ mod doc_tests {
     /// m!(x + y);
     /// ```
     fn test_replace_from_multi_token_none_group() {}
+
+    /// ```compile_fail
+    /// use pastey::paste;
+    /// macro_rules! m {
+    ///     ($to:expr) => { paste! { struct [<Foo:replace("o", $to)>]; } }
+    /// }
+    /// m!(x + y);
+    /// ```
+    fn test_replace_to_multi_token_none_group() {}
 }
