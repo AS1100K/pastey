@@ -60,6 +60,33 @@ fn test_literal_suffix() {
 }
 
 #[test]
+fn test_float_literal() {
+    let x: f32 = paste!([<0.0 f32>]);
+    assert_eq!(x, 0.0f32);
+
+    let y: f64 = paste!([<1.5 f64>]);
+    assert_eq!(y, 1.5f64);
+
+    macro_rules! typed_float {
+        ($ty:tt) => {
+            paste!([<1.0 $ty>])
+        };
+    }
+
+    let _: f32 = typed_float!(f32);
+    let _: f64 = typed_float!(f64);
+}
+
+#[test]
+fn test_negative_float_literal() {
+    let x: f32 = paste!([< -1.5 f32>]);
+    assert_eq!(x, -1.5f32);
+
+    let y: f64 = paste!([<-0.5 f64>]);
+    assert_eq!(y, -0.5f64);
+}
+
+#[test]
 fn test_underscore() {
     paste! {
         const A_B: usize = 0;
