@@ -105,6 +105,10 @@ jobs:
       - run: cargo +nightly llvm-cov --workspace --branch --exclude-from-report pastey-test-suite --doctests --lcov --output-path lcov.info
         env:
           RUSTFLAGS: -C instrument-coverage -C llvm-args=-pgo-warn-missing-function
+      - name: Print coverage summary and thresould check
+        run: cargo +nightly llvm-cov --workspace --branch --exclude-from-report pastey-test-suite --doctests --fail-under-lines 100 --fail-under-regions 100
+        env:
+          RUSTFLAGS: -C instrument-coverage -C llvm-args=-pgo-warn-missing-function
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:

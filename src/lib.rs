@@ -20,13 +20,13 @@ mod test_helpers;
 use crate::attr::expand_attr;
 use crate::error::{Error, Result};
 use crate::segment::Segment;
+use core::char;
+use core::iter;
+use core::str::FromStr;
 use proc_macro::{
     Delimiter, Group, Ident, LexError, Literal, Punct, Spacing, Span, TokenStream, TokenTree,
 };
-use std::char;
-use std::iter;
 use std::panic;
-use std::str::FromStr;
 
 #[proc_macro]
 pub fn paste(input: TokenStream) -> TokenStream {

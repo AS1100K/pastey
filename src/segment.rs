@@ -1,6 +1,6 @@
 use crate::error::{Error, Result};
+use core::iter::Peekable;
 use proc_macro::{token_stream, Delimiter, Group, Ident, Literal, Span, TokenTree};
-use std::iter::Peekable;
 
 pub(crate) enum Segment {
     String(LitStr),

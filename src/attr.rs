@@ -1,9 +1,9 @@
 use crate::error::Result;
 use crate::segment::{self, Segment};
+use core::iter;
+use core::mem;
+use core::str::FromStr;
 use proc_macro::{Delimiter, Group, Spacing, Span, TokenStream, TokenTree};
-use std::iter;
-use std::mem;
-use std::str::FromStr;
 
 pub fn expand_attr(
     attr: TokenStream,

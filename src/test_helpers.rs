@@ -5,8 +5,8 @@
 // not production code.
 
 use crate::attr::expand_attr;
+use core::str::FromStr;
 use proc_macro::{Delimiter, Group, Ident, Punct, Spacing, Span, TokenStream, TokenTree};
-use std::str::FromStr;
 
 use super::{expand, parse_bracket_as_segments, pasted_to_tokens};
 
