@@ -140,6 +140,29 @@ mod test_to_snake {
     }
 }
 
+mod test_to_snake_number {
+    use pastey::paste;
+
+    macro_rules! m {
+        ($id:ident) => {
+            paste! {
+                const DEFAULT_SNAKE_NUMBER: &str = stringify!([<$id:snake_number>]);
+                const LOWER_SNAKE_NUMBER: &str = stringify!([<$id:snake_number:lower>]);
+                const UPPER_SNAKE_NUMBER: &str = stringify!([<$id:snake_number:upper>]);
+            }
+        };
+    }
+
+    m!(ThisIsButA1Test);
+
+    #[test]
+    fn test_to_snake_number() {
+        assert_eq!(DEFAULT_SNAKE_NUMBER, "this_is_but_a_1_test");
+        assert_eq!(LOWER_SNAKE_NUMBER, "this_is_but_a_1_test");
+        assert_eq!(UPPER_SNAKE_NUMBER, "THIS_IS_BUT_A_1_TEST");
+    }
+}
+
 mod test_to_camel {
     use pastey::paste;
 

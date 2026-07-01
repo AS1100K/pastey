@@ -220,6 +220,18 @@ pub(crate) fn paste(segments: &[Segment]) -> Result<String> {
                         }
                         evaluated.push(acc.to_lowercase());
                     }
+                    "snake_number" => {
+                        let mut acc = String::new();
+                        let mut prev = '_';
+                        for ch in last.chars() {
+                            if (ch.is_uppercase() || ch.is_numeric()) && prev != '_' {
+                                acc.push('_');
+                            }
+                            acc.push(ch);
+                            prev = ch;
+                        }
+                        evaluated.push(acc.to_lowercase());
+                    }
                     "camel" | "upper_camel" | "lower_camel" => {
                         let mut is_lower_camel = ident.to_string().as_str() == "lower_camel";
                         let mut acc = String::new();
